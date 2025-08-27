@@ -27,7 +27,7 @@ public class OKuke {
                 continue;
             }
             addArray(list, line);
-            printEcho(line);
+            //printEcho(line);
         }
     }
 
