@@ -27,7 +27,6 @@ public class OKuke {
                 break;
             }
         }
-        //return input;
     }
 
     public static void listArray(String[] input) {
