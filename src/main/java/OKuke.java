@@ -1,8 +1,9 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class OKuke {
     public static void main(String[] args) {
-        Task[] list = new Task[100];
+        ArrayList<Task> list = new ArrayList<>();
         greetings();
         Scanner scanner = new Scanner(System.in);
 
@@ -22,6 +23,9 @@ public class OKuke {
                 } else if (parts[0].equals("unmark")) {
                     int unmarkedNum = Integer.parseInt(parts[1]);
                     unmark(list, unmarkedNum);
+                } else if (parts[0].equals("delete")) {
+                    int deleteNum = Integer.parseInt(parts[1]);
+                    delete(list, deleteNum);
                 } else {
                     addArray(list, line);
                 }
@@ -39,29 +43,43 @@ public class OKuke {
         }
     }
 
-    public static void mark(Task[] list, int input) throws OkukeException {
-        if (input < 1 || input > 100 || list[input - 1] == null) {
+    public static void mark(ArrayList<Task> list, int input) throws OkukeException {
+        if (input < 1 || input > list.size()) {
             throw new OkukeException.InvalidTaskIndexException();
         }
-        list[input - 1].setMark();
+        Task task = list.get(input - 1);
+        task.setMark();
         System.out.println("____________________________________________________________");
         System.out.println("Nice! I've marked this task as done:");
-        System.out.println(list[input - 1]);
+        System.out.println(task);
         System.out.println("____________________________________________________________");
     }
 
-    public static void unmark(Task[] list, int input) throws OkukeException {
-        if (input < 1 || input > 100 || list[input - 1] == null) {
+    public static void unmark(ArrayList<Task> list, int input) throws OkukeException {
+        if (input < 1 || input > list.size()) {
             throw new OkukeException.InvalidTaskIndexException();
         }
-        list[input - 1].unMark();
+        Task task = list.get(input - 1);
+        task.unMark();
         System.out.println("____________________________________________________________");
         System.out.println("OK, I've marked this task as not done yet:");
-        System.out.println(list[input - 1]);
+        System.out.println(task);
         System.out.println("____________________________________________________________");
     }
 
-    public static void addArray(Task[] input, String message) throws OkukeException {
+    public static void delete(ArrayList<Task> list, int input) throws OkukeException {
+        if (input < 1 || input > list.size()) {
+            throw new OkukeException.InvalidTaskIndexException();
+        }
+        Task removedTask = list.remove(input - 1);
+        System.out.println("____________________________________________________________");
+        System.out.println("Noted. I've removed this task:");
+        System.out.println("  " + removedTask);
+        System.out.println("Now you have " + list.size() + " tasks in the list.");
+        System.out.println("____________________________________________________________");
+    }
+
+    public static void addArray(ArrayList<Task> list, String message) throws OkukeException {
         String[] parts = message.split(" ", 2);
         String command = parts[0];
         String description = (parts.length > 1) ? parts[1] : "";
@@ -109,25 +127,23 @@ public class OKuke {
                 throw new OkukeException.InvalidCommandException();
         }
 
-        // Add task to the first free slot
-        for (int i = 0; i < input.length; i++) {
-            if (input[i] == null) {
-                input[i] = newTask;
-                System.out.println("____________________________________________________________");
-                System.out.println("Got it. I've added this task:");
-                System.out.println("  " + newTask);
-                System.out.println("Now you have " + (i + 1) + " tasks in the list.");
-                System.out.println("____________________________________________________________");
-                break;
-            }
-        }
+        list.add(newTask);
+        System.out.println("____________________________________________________________");
+        System.out.println("Got it. I've added this task:");
+        System.out.println("  " + newTask);
+        System.out.println("Now you have " + list.size() + " tasks in the list.");
+        System.out.println("____________________________________________________________");
     }
 
-    public static void listArray(Task[] input) {
+    public static void listArray(ArrayList<Task> list) {
         System.out.println("____________________________________________________________");
-        System.out.println("Here are the tasks in your list:");
-        for (int i = 0; i < input.length && input[i] != null; i++) {
-            System.out.println((i + 1) + "." + input[i]);
+        if (list.isEmpty()) {
+            System.out.println("Your list is empty!");
+        } else {
+            System.out.println("Here are the tasks in your list:");
+            for (int i = 0; i < list.size(); i++) {
+                System.out.println((i + 1) + "." + list.get(i));
+            }
         }
         System.out.println("____________________________________________________________");
     }
