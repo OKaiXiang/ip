@@ -5,58 +5,64 @@ public class OKuke {
         Task[] list = new Task[100];
         greetings();
         Scanner scanner = new Scanner(System.in);
+
         while (true) {
             String line = scanner.nextLine().trim();
             String[] parts = line.split(" ");
-            if (line.equals("bye")) {
-                goodbye();
-                return;
+
+            try {
+                if (line.equals("bye")) {
+                    goodbye();
+                    return;
+                } else if (line.equals("list")) {
+                    listArray(list);
+                } else if (parts[0].equals("mark")) {
+                    int markedNum = Integer.parseInt(parts[1]);
+                    mark(list, markedNum);
+                } else if (parts[0].equals("unmark")) {
+                    int unmarkedNum = Integer.parseInt(parts[1]);
+                    unmark(list, unmarkedNum);
+                } else {
+                    addArray(list, line);
+                }
+            } catch (OkukeException e) {
+                System.out.println(e.getMessage());
+            } catch (NumberFormatException e) {
+                System.out.println("____________________________________________________________");
+                System.out.println("Please enter a valid task number.");
+                System.out.println("____________________________________________________________");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println("____________________________________________________________");
+                System.out.println("Task number is missing or invalid.");
+                System.out.println("____________________________________________________________");
             }
-            if (line.equals("list")) {
-                listArray(list);
-                continue;
-            }
-            if (parts[0].equals("mark")) {
-                int markedNum = Integer.parseInt(parts[1]);
-                mark(list, markedNum);
-                continue;
-            }
-            if (parts[0].equals("unmark")) {
-                int unmarkedNum = Integer.parseInt(parts[1]);
-                unmark(list, unmarkedNum);
-                continue;
-            }
-            addArray(list, line);
-            //printEcho(line);
         }
     }
 
-    public static void mark(Task[] list, int input) {
-        if (input > 100 || input < 1 || list[input - 1] == null) {
-            System.out.println(" Task does not exist");
-            return;
+    public static void mark(Task[] list, int input) throws OkukeException {
+        if (input < 1 || input > 100 || list[input - 1] == null) {
+            throw new OkukeException.InvalidTaskIndexException();
         }
-        list[input-1].setMark();
+        list[input - 1].setMark();
         System.out.println("____________________________________________________________");
         System.out.println("Nice! I've marked this task as done:");
-        System.out.println(list[input-1].toString());
+        System.out.println(list[input - 1]);
         System.out.println("____________________________________________________________");
     }
 
-    public static void unmark(Task[] list, int input) {
-        if (input > 100 || input < 1 || list[input - 1] == null) {
-            System.out.println(" Task does not exist");
-            return;
+    public static void unmark(Task[] list, int input) throws OkukeException {
+        if (input < 1 || input > 100 || list[input - 1] == null) {
+            throw new OkukeException.InvalidTaskIndexException();
         }
-        list[input-1].unMark();
+        list[input - 1].unMark();
         System.out.println("____________________________________________________________");
         System.out.println("OK, I've marked this task as not done yet:");
-        System.out.println(list[input-1].toString());
+        System.out.println(list[input - 1]);
         System.out.println("____________________________________________________________");
     }
 
-    public static void addArray(Task[] input, String message) {
-        String[] parts = message.split(" ", 2); // split into command + rest
+    public static void addArray(Task[] input, String message) throws OkukeException {
+        String[] parts = message.split(" ", 2);
         String command = parts[0];
         String description = (parts.length > 1) ? parts[1] : "";
 
@@ -65,44 +71,45 @@ public class OKuke {
         switch (command) {
             case "todo":
                 if (description.isEmpty()) {
-                    System.out.println("☹ OOPS!!! The description of a todo cannot be empty.");
-                    return;
+                    throw new OkukeException.MissingTaskNameException();
                 }
                 newTask = new Todo(description);
                 break;
 
             case "deadline":
-                // expect format: deadline <desc> /by <date>
+                if (!description.contains("/by")) {
+                    throw new OkukeException.MissingDeadlineArgumentsException();
+                }
+
                 String[] deadlineParts = description.split("/by", 2);
-                if (deadlineParts.length < 2) {
-                    System.out.println("☹ OOPS!!! The deadline format is wrong. Use: deadline <desc> /by <time>");
-                    return;
+
+                if (deadlineParts[0].trim().isEmpty()) {
+                    throw new OkukeException.MissingDeadlineArgumentsException();
+                }
+                if (deadlineParts[1].trim().isEmpty()) {
+                    throw new OkukeException.MissingDateException();
                 }
                 newTask = new Deadline(deadlineParts[0].trim(), deadlineParts[1].trim());
                 break;
 
             case "event":
-                // expect format: event <desc> /from <start> /to <end>
                 String[] eventParts = description.split("/from", 2);
                 if (eventParts.length < 2) {
-                    System.out.println("☹ OOPS!!! The event format is wrong. Use: event <desc> /from <start> /to <end>");
-                    return;
+                    throw new OkukeException.MissingEventArgumentsException();
                 }
                 String desc = eventParts[0].trim();
                 String[] fromTo = eventParts[1].split("/to", 2);
                 if (fromTo.length < 2) {
-                    System.out.println("☹ OOPS!!! The event format is wrong. Use: event <desc> /from <start> /to <end>");
-                    return;
+                    throw new OkukeException.MissingEventArgumentsException();
                 }
                 newTask = new Event(desc, fromTo[0].trim(), fromTo[1].trim());
                 break;
 
             default:
-                System.out.println("☹ OOPS!!! I don’t know what that means.");
-                return;
+                throw new OkukeException.InvalidCommandException();
         }
 
-        // add task into the first free slot
+        // Add task to the first free slot
         for (int i = 0; i < input.length; i++) {
             if (input[i] == null) {
                 input[i] = newTask;
@@ -116,18 +123,14 @@ public class OKuke {
         }
     }
 
-
     public static void listArray(Task[] input) {
         System.out.println("____________________________________________________________");
         System.out.println("Here are the tasks in your list:");
-        int i = 0;
-        while (i < input.length && input[i] != null) {
+        for (int i = 0; i < input.length && input[i] != null; i++) {
             System.out.println((i + 1) + "." + input[i]);
-            i += 1;
         }
         System.out.println("____________________________________________________________");
     }
-
 
     public static void greetings() {
         System.out.println("____________________________________________________________");
@@ -148,4 +151,12 @@ public class OKuke {
         System.out.println("____________________________________________________________");
     }
 
+    public static int findStringIndex(String[] description, String target) {
+        for (int i = 0; i < description.length; i++) {
+            if (description[i].equals(target)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }
