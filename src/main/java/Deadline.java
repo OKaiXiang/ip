@@ -1,20 +1,21 @@
-public class Deadline extends Task{
-    private final String deadline;
+import java.time.LocalDateTime;
 
-    public Deadline(String taskName, String deadline) {
+public class Deadline extends Task {
+    private final LocalDateTime by;
+
+    public Deadline(String taskName, LocalDateTime by) {
         super(taskName);
-        this.deadline = deadline;
+        this.by = by;
     }
 
-    public String getType() {
-        return "[D]";
-    }
-    public String getDeadline() {
-        return this.deadline;
+    public LocalDateTime getByDateTime() {
+        return by;
     }
 
     @Override
-    public String toString(){
-        return this.getType() + super.toString() + "(by: " + this.deadline + ")";
+    public String toString() {
+        return "[D][" + getStatus() + "] " + getTaskName()
+                + " (by: " + DateTimeUtil.formatNice(by) + ")";
     }
 }
+

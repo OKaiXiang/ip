@@ -1,3 +1,6 @@
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -25,6 +28,32 @@ public class OKuke {
         System.out.println("____________________________________________________________");
     }
 
+    /** Stretch goal: list items on a specific date. */
+    private static void listOnDate(List<Task> list, LocalDate date) {
+        System.out.println("____________________________________________________________");
+        System.out.println("Items on " + date + ":");
+        int count = 0;
+        for (Task t : list) {
+            if (t instanceof Deadline) {
+                LocalDate d = ((Deadline) t).getByDateTime().toLocalDate();
+                if (d.equals(date)) {
+                    System.out.println(" - " + t);
+                    count++;
+                }
+            } else if (t instanceof Event) {
+                Event e = (Event) t;
+                LocalDate start = e.getStartDateTime().toLocalDate();
+                LocalDate end   = e.getEndDateTime().toLocalDate();
+                if (!date.isBefore(start) && !date.isAfter(end)) {
+                    System.out.println(" - " + t);
+                    count++;
+                }
+            }
+        }
+        if (count == 0) System.out.println("  (none)");
+        System.out.println("____________________________________________________________");
+    }
+
     private static void saveOrWarn(Storage storage, List<Task> list) {
         try {
             storage.save(list);
@@ -40,17 +69,23 @@ public class OKuke {
         System.out.println("____________________________________________________________");
     }
 
-    private static void addDeadline(List<Task> list, String desc, String by) {
+    /** Level 8: parse date/time for deadlines. */
+    private static void addDeadline(List<Task> list, String desc, String byRaw) {
+        LocalDateTime by = DateTimeUtil.parseFlexibleDateTime(byRaw);
         list.add(new Deadline(desc, by));
         System.out.println("____________________________________________________________");
-        System.out.println("added: " + desc + " (by: " + by + ")");
+        System.out.println("added: " + desc + " (by: " + DateTimeUtil.formatNice(by) + ")");
         System.out.println("____________________________________________________________");
     }
 
-    private static void addEvent(List<Task> list, String desc, String from, String to) {
+    /** Level 8: parse date/time for events. */
+    private static void addEvent(List<Task> list, String desc, String fromRaw, String toRaw) {
+        LocalDateTime from = DateTimeUtil.parseFlexibleDateTime(fromRaw);
+        LocalDateTime to   = DateTimeUtil.parseFlexibleDateTime(toRaw);
         list.add(new Event(desc, from, to));
         System.out.println("____________________________________________________________");
-        System.out.println("added: " + desc + " (from: " + from + " to: " + to + ")");
+        System.out.println("added: " + desc + " (from: " + DateTimeUtil.formatNice(from)
+                + " to: " + DateTimeUtil.formatNice(to) + ")");
         System.out.println("____________________________________________________________");
     }
 
@@ -145,7 +180,7 @@ public class OKuke {
                         break;
                     }
                     case "deadline": {
-                        // deadline <desc> /by <when>
+                        // deadline <desc> /by <date or date-time>
                         if (parts.length < 2) throw new OkukeException.InvalidCommandException();
                         String[] segs = parts[1].split("\\s*/by\\s*", 2);
                         if (segs.length != 2) throw new OkukeException.InvalidCommandException();
@@ -164,12 +199,21 @@ public class OKuke {
                         }
                         String desc = rest.substring(0, fromIdx).trim();
                         String from = rest.substring(fromIdx + 5, toIdx).trim();
-                        String to = rest.substring(toIdx + 3).trim();
+                        String to   = rest.substring(toIdx + 3).trim();
                         if (desc.isEmpty() || from.isEmpty() || to.isEmpty()) {
                             throw new OkukeException.MissingEventArgumentsException();
                         }
                         addEvent(list, desc, from, to);
                         saveOrWarn(storage, list);
+                        break;
+                    }
+                    case "on": {
+                        // on <date>    e.g., on 2019-10-15
+                        if (parts.length < 2 || parts[1].isBlank()) {
+                            throw new OkukeException.InvalidCommandException();
+                        }
+                        LocalDate date = DateTimeUtil.parseFlexibleDateTime(parts[1].trim()).toLocalDate();
+                        listOnDate(list, date);
                         break;
                     }
                     default:
@@ -179,6 +223,13 @@ public class OKuke {
                 System.out.println(ice.getMessage());
             } catch (OkukeException.MissingEventArgumentsException me) {
                 System.out.println(me.getMessage());
+            } catch (DateTimeParseException dtpe) {
+                System.out.println("____________________________________________________________");
+                System.out.println("Invalid date/time. Try formats like:");
+                System.out.println("  - 2019-10-15");
+                System.out.println("  - 2019-12-02 1800");
+                System.out.println("  - 2/12/2019 1800");
+                System.out.println("____________________________________________________________");
             } catch (NumberFormatException | IndexOutOfBoundsException ex) {
                 System.out.println("____________________________________________________________");
                 System.out.println("Invalid index or format. Please check your command.");
