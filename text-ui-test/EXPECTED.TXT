@@ -3,7 +3,7 @@ Hello! I'm OKuke
 What can I do for you?
 ____________________________________________________________
 ____________________________________________________________
-Got it. I've added this task:
+Got it. I've added this okuke.task:
   [T][ ] borrow book
 Now you have 1 tasks in the list.
 ____________________________________________________________
@@ -12,7 +12,7 @@ Here are the tasks in your list:
 1.[T][ ] borrow book
 ____________________________________________________________
 ____________________________________________________________
-Got it. I've added this task:
+Got it. I've added this okuke.task:
   [D][ ] return book(by: Sunday)
 Now you have 2 tasks in the list.
 ____________________________________________________________
@@ -22,7 +22,7 @@ Here are the tasks in your list:
 2.[D][ ] return book(by: Sunday)
 ____________________________________________________________
 ____________________________________________________________
-Got it. I've added this task:
+Got it. I've added this okuke.task:
   [E][ ] project meeting(from: Mon 2pm to: 4pm)
 Now you have 3 tasks in the list.
 ____________________________________________________________
@@ -33,7 +33,7 @@ Here are the tasks in your list:
 3.[E][ ] project meeting(from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
-Nice! I've marked this task as done:
+Nice! I've marked this okuke.task as done:
 [E][X] project meeting(from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
@@ -43,7 +43,7 @@ Here are the tasks in your list:
 3.[E][X] project meeting(from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
-Nice! I've marked this task as done:
+Nice! I've marked this okuke.task as done:
 [T][X] borrow book
 ____________________________________________________________
 ____________________________________________________________
@@ -53,7 +53,7 @@ Here are the tasks in your list:
 3.[E][X] project meeting(from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________
-OK, I've marked this task as not done yet:
+OK, I've marked this okuke.task as not done yet:
 [E][ ] project meeting(from: Mon 2pm to: 4pm)
 ____________________________________________________________
 ____________________________________________________________

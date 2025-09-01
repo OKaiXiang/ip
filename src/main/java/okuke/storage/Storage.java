@@ -1,3 +1,11 @@
+package okuke.storage;
+
+import okuke.exception.OkukeException;
+import okuke.task.Deadline;
+import okuke.task.Event;
+import okuke.task.Task;
+import okuke.task.Todo;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -34,7 +42,7 @@ public class Storage {
         }
     }
 
-    /** Loads all tasks from disk; creates file if missing and throws the stretch-goal exception for UI. */
+    /** Loads all tasks from disk; creates file if missing and throws the stretch-goal okuke.exception for UI. */
     public List<Task> load() throws IOException, OkukeException.DataFileMissingException {
         List<Task> tasks = new ArrayList<>();
 
@@ -55,14 +63,14 @@ public class Storage {
                 if (t != null) {
                     tasks.add(t);
                 } else {
-                    System.err.println("[Storage] Skipped corrupted line " + lineno + ": " + trimmed);
+                    System.err.println("[okuke.storage.Storage] Skipped corrupted line " + lineno + ": " + trimmed);
                 }
             }
         }
         return tasks;
     }
 
-    /** Saves the entire task list (overwrite). */
+    /** Saves the entire okuke.task list (overwrite). */
     public void save(List<Task> tasks) throws IOException {
         ensureExists();
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {

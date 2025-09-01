@@ -1,3 +1,5 @@
+package okuke.exception;
+
 public class OkukeException extends Exception {
 
     public OkukeException(String errorMessage) {

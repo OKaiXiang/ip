@@ -1,3 +1,12 @@
+package okuke;
+
+import okuke.command.Command;
+import okuke.exception.OkukeException;
+import okuke.parser.Parser;
+import okuke.storage.Storage;
+import okuke.ui.Ui;
+import okuke.task.TaskList;
+
 public class OKuke {
 
     private final Storage storage;
@@ -14,7 +23,7 @@ public class OKuke {
             ui.showLoadingError(e.getMessage());
             this.tasks = new TaskList();
         } catch (Exception e) {
-            ui.showLoadingError("[Storage] Failed to load tasks: " + e.getMessage());
+            ui.showLoadingError("[okuke.storage.Storage] Failed to load tasks: " + e.getMessage());
             this.tasks = new TaskList();
         }
     }
@@ -31,7 +40,7 @@ public class OKuke {
             } catch (OkukeException e) {
                 ui.showError(e.getMessage());
             } catch (NumberFormatException | IndexOutOfBoundsException ex) {
-                ui.showError("Invalid index or format. Please check your command.");
+                ui.showError("Invalid index or format. Please check your okuke.command.");
             } catch (Exception ex) {
                 ui.showError("[Error] " + ex.getMessage());
             }

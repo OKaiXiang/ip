@@ -1,3 +1,5 @@
+package okuke.task;
+
 public class Task {
     private final String taskName;
     private boolean isMark;

@@ -1,5 +1,15 @@
+package okuke.command;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+
+import okuke.exception.OkukeException;
+import okuke.storage.Storage;
+import okuke.task.Deadline;
+import okuke.task.Task;
+import okuke.task.TaskList;
+import okuke.ui.Ui;
+import okuke.util.DateTimeUtil;
 
 public class AddDeadlineCommand extends Command {
     private final String desc;

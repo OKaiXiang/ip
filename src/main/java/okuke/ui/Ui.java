@@ -1,3 +1,7 @@
+package okuke.ui;
+
+import okuke.task.Task;
+import okuke.task.TaskList;
 import java.util.Scanner;
 
 public class Ui {
@@ -42,7 +46,7 @@ public class Ui {
 
     public void showDeleted(Task removed, TaskList tasks) {
         showLine();
-        System.out.println("Noted. I've removed this task:");
+        System.out.println("Noted. I've removed this okuke.task:");
         System.out.println("  " + removed);
         System.out.println("Now you have " + tasks.size() + " tasks in the list.");
         showLine();
@@ -50,14 +54,14 @@ public class Ui {
 
     public void showMark(Task t) {
         showLine();
-        System.out.println("Nice! I've marked this task as done:");
+        System.out.println("Nice! I've marked this okuke.task as done:");
         System.out.println("  " + t);
         showLine();
     }
 
     public void showUnmark(Task t) {
         showLine();
-        System.out.println("OK, I've marked this task as not done yet:");
+        System.out.println("OK, I've marked this okuke.task as not done yet:");
         System.out.println("  " + t);
         showLine();
     }

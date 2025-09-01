@@ -1,3 +1,10 @@
+package okuke.command;
+
+import okuke.storage.Storage;
+import okuke.task.Task;
+import okuke.task.TaskList;
+import okuke.ui.Ui;
+
 public class UnmarkCommand extends Command {
     private final int indexOneBased;
     public UnmarkCommand(int idx1) { this.indexOneBased = idx1; }
