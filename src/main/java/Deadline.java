@@ -9,6 +9,9 @@ public class Deadline extends Task{
     public String getType() {
         return "[D]";
     }
+    public String getDeadline() {
+        return this.deadline;
+    }
 
     @Override
     public String toString(){

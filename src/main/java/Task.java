@@ -7,20 +7,9 @@ public class Task {
         this.isMark = false;
     }
 
-    /*
-    public Task(String taskName, boolean isMark) {
-        this.taskName = taskName;
-        this.isMark = isMark;
-    }
-
     public String getTaskName() {
         return this.taskName;
     }
-
-    public boolean isMark() {
-        return this.isMark;
-    }
-    */
 
     public void setMark() {
         this.isMark = true;
