@@ -71,4 +71,10 @@ public class OkukeException extends Exception {
             super(errorMessage);
         }
     }
+
+    public static class DataFileMissingException extends OkukeException {
+        public DataFileMissingException(String path) {
+            super("Data file did not exist. A new one has been created at: " + path);
+        }
+    }
 }
