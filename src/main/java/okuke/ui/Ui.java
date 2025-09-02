@@ -2,6 +2,7 @@ package okuke.ui;
 
 import okuke.task.Task;
 import okuke.task.TaskList;
+
 import java.util.Scanner;
 
 public class Ui {
