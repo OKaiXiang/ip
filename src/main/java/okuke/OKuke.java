@@ -7,12 +7,20 @@ import okuke.storage.Storage;
 import okuke.ui.Ui;
 import okuke.task.TaskList;
 
+/**
+ * Main application entry point and runtime loop for OKuke.
+ * Wires Storage, Parser, and Ui, then runs the REPL until exit.
+ */
 public class OKuke {
 
     private final Storage storage;
     private TaskList tasks;
     private final Ui ui;
 
+    /**
+     * Constructs the application, initializing storage, UI, and task list.
+     * Loads persisted tasks from disk if available.
+     */
     public OKuke() {
         this.ui = new Ui();
         this.storage = new Storage(); // your existing self-contained path (./src/data/MochiBot.txt)
@@ -28,6 +36,16 @@ public class OKuke {
         }
     }
 
+    /**
+     * Runs the read–evaluate–print loop:
+     * <ol>
+     *   <li>Read a line from the UI</li>
+     *   <li>Parse into a Command</li>
+     *   <li>Execute the Command (mutating storage/tasks/UI as needed)</li>
+     *   <li>Handle and display errors gracefully</li>
+     *   <li>Repeat until the Command signals exit</li>
+     * </ol>
+     */
     public void run() {
         ui.showWelcome();
         boolean isExit = false;
@@ -47,6 +65,11 @@ public class OKuke {
         }
     }
 
+    /**
+     * Creates and runs the OKuke application.
+     *
+     * @param args ignored
+     */
     public static void main(String[] args) {
         new OKuke().run();
     }
