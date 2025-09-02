@@ -11,15 +11,30 @@ import okuke.task.TaskList;
 import okuke.ui.Ui;
 import okuke.util.DateTimeUtil;
 
+/**
+ * Adds a new {@link okuke.task.Deadline} with a "by" date/time.
+ */
 public class AddDeadlineCommand extends Command {
     private final String desc;
     private final String byRaw;
 
+    /**
+     * Creates an add-deadline command.
+     *
+     * @param desc  task description
+     * @param byRaw user input for the deadline date/time (flexible formats)
+     */
     public AddDeadlineCommand(String desc, String byRaw) {
         this.desc = desc;
         this.byRaw = byRaw;
     }
 
+    /**
+     * Parses {@code byRaw}, constructs a {@code Deadline}, appends it to the list,
+     * shows a confirmation, and saves to storage.
+     *
+     * @throws okuke.exception.OkukeException.InvalidCommandException if {@code byRaw} cannot be parsed
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws OkukeException {
         try {

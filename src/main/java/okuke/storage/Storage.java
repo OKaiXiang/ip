@@ -19,6 +19,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles persistence of tasks to and from a UTF-8 text file on disk.
+ * Provides robust loading (skips/flags corrupted lines) and lossless saving
+ * using a simple, line-oriented format.
+ */
 public class Storage {
     private static final String FILE_PATH = "./src/data/OKuke.txt";
     private static final String SEP = " | ";
@@ -28,6 +33,10 @@ public class Storage {
 
     private final Path path;
 
+    /**
+     * Constructs a new {@code Storage} bound to the configured file path.
+     * Ensures parent directories exist and prepares for load/save operations.
+     */
     public Storage() {
         this.path = Paths.get(FILE_PATH).normalize();
     }
@@ -42,7 +51,18 @@ public class Storage {
         }
     }
 
-    /** Loads all tasks from disk; creates file if missing and throws the stretch-goal okuke.exception for UI. */
+    /**
+     * Loads tasks from disk into memory.
+     * <ul>
+     *   <li>Creates the data file if the parent directory is present but the file is missing.</li>
+     *   <li>Parses each line into {@link okuke.task.Task} subtypes (Todo/Deadline/Event).</li>
+     *   <li>Silently skips lines that are obviously corrupted/unparseable.</li>
+     * </ul>
+     *
+     * @return a mutable {@code List<Task>} representing all loaded tasks
+     * @throws java.io.IOException if the file cannot be read
+     * @throws okuke.exception.OkukeException.DataFileMissingException if the data file path does not exist
+     */
     public List<Task> load() throws IOException, OkukeException.DataFileMissingException {
         List<Task> tasks = new ArrayList<>();
 
@@ -70,7 +90,13 @@ public class Storage {
         return tasks;
     }
 
-    /** Saves the entire okuke.task list (overwrite). */
+    /**
+     * Persists the provided tasks to disk, overwriting the existing file.
+     * Uses a stable, line-based format compatible with {@link #load()}.
+     *
+     * @param tasks the tasks to serialize
+     * @throws java.io.IOException if the file cannot be written
+     */
     public void save(List<Task> tasks) throws IOException {
         ensureExists();
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
@@ -86,6 +112,13 @@ public class Storage {
 
     // ---------- encoding/decoding (self-contained) ----------
 
+    /**
+     * Converts a single task into its on-disk line representation.
+     * Includes type tag, done flag, description, and any date/time fields.
+     *
+     * @param t the task to encode
+     * @return serialized single-line form of the task
+     */
     private String formatLine(Task t) {
         String done = "X".equals(t.getStatus()) ? "1" : "0";
         if (t instanceof Todo) {
@@ -102,6 +135,14 @@ public class Storage {
         return null; // unknown type
     }
 
+    /**
+     * Parses one serialized line from the data file into a {@link okuke.task.Task}.
+     * Recognizes Todo, Deadline (with "/by"), and Event (with "/from" and "/to").
+     * Returns {@code null} for clearly corrupted lines so callers can skip them.
+     *
+     * @param line one line of task data (without line terminator)
+     * @return the parsed task, or {@code null} if the line is invalid
+     */
     private Task parseLine(String line) {
         try {
             String[] parts = line.split("\\s\\|\\s"); // exact " | "
@@ -140,7 +181,13 @@ public class Storage {
         }
     }
 
-    /** Accepts ISO date-time or date (for robustness with older files). */
+    /**
+     * Parses a date string in ISO date-time or ISO date form.
+     * If only a date is provided, returns the start of day (00:00).
+     *
+     * @param s the date/time string to parse
+     * @return parsed {@code LocalDateTime}
+     */
     private static LocalDateTime parseIsoDateOrDateTime(String s) {
         String in = s.trim();
         try { return LocalDateTime.parse(in, ISO_DT); } catch (Exception ignore) {}

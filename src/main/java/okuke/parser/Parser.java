@@ -12,8 +12,26 @@ import okuke.command.AddDeadlineCommand;
 import okuke.command.AddEventCommand;
 import okuke.command.OnDateCommand;
 
+/**
+ * Parses raw user input strings into executable {@code Command} instances.
+ * Supports core commands such as: {@code bye}, {@code list}, {@code mark},
+ * {@code unmark}, {@code delete}, {@code todo}, {@code deadline},
+ * {@code event}, and date filters (e.g., {@code on <yyyy-MM-dd>}).
+ *
+ * <p>Validation errors are surfaced via {@link okuke.exception.OkukeException}
+ * subclasses with user-friendly messages.</p>
+ */
 public class Parser {
 
+    /**
+     * Parses a full command line into a concrete {@link okuke.command.Command}.
+     * Trims input, detects the command word, validates arguments, and constructs
+     * the corresponding command object.
+     *
+     * @param fullCommand the line the user typed (may include extra spaces)
+     * @return a ready-to-execute {@code Command}
+     * @throws okuke.exception.OkukeException if the command is unknown or arguments are invalid
+     */
     public static Command parse(String fullCommand) throws OkukeException {
         if (fullCommand == null || fullCommand.isBlank()) {
             throw new OkukeException.InvalidCommandException();
@@ -79,6 +97,14 @@ public class Parser {
         }
     }
 
+    /**
+     * Converts a 1-based index string (as typed by the user) into an integer.
+     * Rejects non-numeric inputs and surfaces a friendly parse error.
+     *
+     * @param s the user-provided index token
+     * @return the parsed integer index
+     * @throws okuke.exception.OkukeException.InvalidCommandException if {@code s} is not a valid integer
+     */
     private static int parseIndex(String s) throws OkukeException.InvalidCommandException {
         try {
             return Integer.parseInt(s.trim());
