@@ -11,6 +11,8 @@ import okuke.command.AddTodoCommand;
 import okuke.command.AddDeadlineCommand;
 import okuke.command.AddEventCommand;
 import okuke.command.OnDateCommand;
+import okuke.command.FindCommand;
+
 
 /**
  * Parses raw user input strings into executable {@code Command} instances.
@@ -86,6 +88,10 @@ public class Parser {
                 }
                 return new AddEventCommand(desc, from, to);
             }
+
+            case "find":
+                if (parts.length < 2 || parts[1].isBlank()) throw new OkukeException.InvalidCommandException();
+                return new FindCommand(parts[1].trim());
 
             // Stretch: list items on a date
             case "on":

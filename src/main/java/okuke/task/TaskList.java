@@ -110,4 +110,23 @@ public class TaskList {
         }
         return out;
     }
+
+    /**
+     * Returns tasks whose description contains the given keyword,
+     * case-insensitive.
+     *
+     * @param keyword search string to find within task names
+     * @return a new list containing matching tasks in their original order
+     */
+    public List<Task> find(String keyword) {
+        String needle = keyword == null ? "" : keyword.toLowerCase();
+        List<Task> result = new ArrayList<>();
+        for (Task t : tasks) {
+            if (t.getTaskName().toLowerCase().contains(needle)) {
+                result.add(t);
+            }
+        }
+        return result;
+    }
+
 }
