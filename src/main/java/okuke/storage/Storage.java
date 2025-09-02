@@ -1,11 +1,5 @@
 package okuke.storage;
 
-import okuke.exception.OkukeException;
-import okuke.task.Deadline;
-import okuke.task.Event;
-import okuke.task.Task;
-import okuke.task.Todo;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,6 +12,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import okuke.exception.OkukeException;
+import okuke.task.Deadline;
+import okuke.task.Event;
+import okuke.task.Task;
+import okuke.task.Todo;
 
 /**
  * Handles persistence of tasks to and from a UTF-8 text file on disk.
