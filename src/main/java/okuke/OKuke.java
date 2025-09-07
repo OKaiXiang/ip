@@ -73,4 +73,30 @@ public class OKuke {
     public static void main(String[] args) {
         new OKuke().run();
     }
+
+    /**
+     * Executes one input line through Parser/Command and returns the formatted reply
+     * string for the GUI (user bubble on the right, reply on the left).
+     *
+     * @param input the raw line the user typed
+     * @return the response text to show in the reply bubble
+     */
+    public String getResponse(String input) {
+        okuke.ui.Gui gui = new okuke.ui.Gui();
+        try {
+            Command c = Parser.parse(input);
+            c.execute(tasks, gui, storage);
+            if (c.isExit()) {
+                gui.showBye();
+            }
+        } catch (OkukeException e) {
+            gui.showError(e.getMessage());
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            gui.showError("Invalid index or format. Please check your command.");
+        } catch (Exception ex) {
+            gui.showError("[Error] " + ex.getMessage());
+        }
+        return gui.consume();
+    }
+
 }
