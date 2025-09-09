@@ -35,12 +35,14 @@ public class Parser {
      * @throws okuke.exception.OkukeException if the command is unknown or arguments are invalid
      */
     public static Command parse(String fullCommand) throws OkukeException {
+        assert fullCommand != null : "Line cannot be null";
         if (fullCommand == null || fullCommand.isBlank()) {
             throw new OkukeException.InvalidCommandException();
         }
 
         String[] parts = fullCommand.split("\\s+", 2);
         String cmd = parts[0];
+        assert cmd != null : "Unrecognized command paths must throw, not return null";
 
         switch (cmd) {
             case "bye":
@@ -112,6 +114,7 @@ public class Parser {
      * @throws okuke.exception.OkukeException.InvalidCommandException if {@code s} is not a valid integer
      */
     private static int parseIndex(String s) throws OkukeException.InvalidCommandException {
+        assert s != null : "index token cannot be null";
         try {
             return Integer.parseInt(s.trim());
         } catch (NumberFormatException nfe) {

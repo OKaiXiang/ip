@@ -37,7 +37,10 @@ public class TaskList {
      * @return the task at the given position
      * @throws IndexOutOfBoundsException if the index is invalid
      */
-    public Task get(int indexZeroBased) { return tasks.get(indexZeroBased); }
+    public Task get(int indexZeroBased) {
+        assert indexZeroBased >= 0 && indexZeroBased < tasks.size() : "index OOB";
+        return tasks.get(indexZeroBased);
+    }
 
     /**
      * Returns the underlying modifiable list view.
@@ -47,7 +50,10 @@ public class TaskList {
      */
     public List<Task> asList() { return tasks; }
 
-    public void add(Task t) { tasks.add(t); }
+    public void add(Task t) {
+        assert t != null : "cannot add null task";
+        tasks.add(t);
+    }
 
     /**
      * Removes and returns the task at the given 1-based position.
@@ -57,6 +63,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is invalid
      */
     public Task removeOneBased(int indexOneBased) {
+        assert indexOneBased >= 1 && indexOneBased <= tasks.size() : "index OOB";
         return tasks.remove(indexOneBased - 1);
     }
 
