@@ -90,6 +90,7 @@ public class TaskList {
     public Task unmarkOneBased(int indexOneBased) {
         Task t = tasks.get(indexOneBased - 1);
         t.unMark();
+        assert !t.isDone() : "task should be unmarked"
         return t;
     }
 
