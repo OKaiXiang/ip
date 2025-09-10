@@ -1,3 +1,4 @@
-T | 1 | borrow book
+T | 0 | borrow book
 D | 1 | return book | 2024-06-06T00:00:00
 E | 0 | Tryhard | 2025-02-02T00:00:00 | 2026-04-04T00:00:00
+T | 0 | die
