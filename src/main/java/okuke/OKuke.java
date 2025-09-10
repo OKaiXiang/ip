@@ -23,7 +23,7 @@ public class OKuke {
      */
     public OKuke() {
         this.ui = new Ui();
-        this.storage = new Storage(); // your existing self-contained path (./src/data/MochiBot.txt)
+        this.storage = new Storage(); // your existing self-contained path (./src/data/Okuke.txt)
         try {
             this.tasks = new TaskList(storage.load());
         } catch (OkukeException.DataFileMissingException e) {
@@ -82,6 +82,7 @@ public class OKuke {
      * @return the response text to show in the reply bubble
      */
     public String getResponse(String input) {
+        assert input != null : "input must not be null";
         okuke.ui.Gui gui = new okuke.ui.Gui();
         try {
             Command c = Parser.parse(input);
