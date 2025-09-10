@@ -1,5 +1,8 @@
 package okuke.parser;
 
+import java.util.Objects;
+import java.util.regex.Pattern;
+
 import okuke.exception.OkukeException;
 import okuke.command.Command;
 import okuke.command.ExitCommand;
@@ -13,7 +16,6 @@ import okuke.command.AddEventCommand;
 import okuke.command.OnDateCommand;
 import okuke.command.FindCommand;
 
-
 /**
  * Parses raw user input strings into executable {@code Command} instances.
  * Supports core commands such as: {@code bye}, {@code list}, {@code mark},
@@ -23,84 +25,130 @@ import okuke.command.FindCommand;
  * <p>Validation errors are surfaced via {@link okuke.exception.OkukeException}
  * subclasses with user-friendly messages.</p>
  */
-public class Parser {
+public final class Parser {
+
+    private Parser() { /* utility */ }
+
+    /** Command words as name constants to remove magic strings. */
+    private static final class Cmd {
+        static final String BYE      = "bye";
+        static final String LIST     = "list";
+        static final String MARK     = "mark";
+        static final String UNMARK   = "unmark";
+        static final String DELETE   = "delete";
+        static final String TODO     = "todo";
+        static final String DEADLINE = "deadline";
+        static final String EVENT    = "event";
+        static final String ON       = "on";
+        static final String FIND     = "find";
+    }
+
+    // -------- Regex patterns (precompiled for clarity/perf) --------
+    private static final Pattern SPACE_SPLIT          = Pattern.compile("\\s+");
+    private static final Pattern DEADLINE_BY_SPLIT    = Pattern.compile("\\s+/by\\s+");
+    private static final Pattern EVENT_FROM_SPLIT     = Pattern.compile("\\s+/from\\s+");
+    private static final Pattern EVENT_TO_SPLIT       = Pattern.compile("\\s+/to\\s+");
 
     /**
      * Parses a full command line into a concrete {@link okuke.command.Command}.
-     * Trims input, detects the command word, validates arguments, and constructs
-     * the corresponding command object.
      *
-     * @param fullCommand the line the user typed (may include extra spaces)
+     * @param line the line the user typed (may include extra spaces)
      * @return a ready-to-execute {@code Command}
      * @throws okuke.exception.OkukeException if the command is unknown or arguments are invalid
      */
-    public static Command parse(String fullCommand) throws OkukeException {
-        if (fullCommand == null || fullCommand.isBlank()) {
+    public static Command parse(String line) throws OkukeException {
+        Objects.requireNonNull(line, "input cannot be null");
+        final String trimmed = line.trim();
+        if (trimmed.isEmpty()) {
             throw new OkukeException.InvalidCommandException();
         }
 
-        String[] parts = fullCommand.split("\\s+", 2);
-        String cmd = parts[0];
+        final String[] parts = SPACE_SPLIT.split(trimmed, 2);
+        final String head = parts[0].toLowerCase();
+        final String tail = (parts.length > 1) ? parts[1] : "";
 
-        switch (cmd) {
-            case "bye":
-                return new ExitCommand();
+        return switch (head) {
+            case Cmd.BYE      -> new ExitCommand();
+            case Cmd.LIST     -> new ListCommand();
+            case Cmd.MARK     -> parseMark(tail);
+            case Cmd.UNMARK   -> parseUnmark(tail);
+            case Cmd.DELETE   -> parseDelete(tail);
+            case Cmd.TODO     -> parseTodo(tail);
+            case Cmd.DEADLINE -> parseDeadline(tail);
+            case Cmd.EVENT    -> parseEvent(tail);
+            case Cmd.ON       -> parseOnDate(tail);
+            case Cmd.FIND     -> parseFind(tail);
+            default           -> throw new OkukeException.InvalidCommandException();
+        };
+    }
 
-            case "list":
-                return new ListCommand();
+    private static Command parseMark(String tail) throws OkukeException {
+        return new MarkCommand(parseIndex(tail));
+    }
 
-            case "mark":
-                if (parts.length < 2) throw new OkukeException.InvalidCommandException();
-                return new MarkCommand(parseIndex(parts[1]));
+    private static Command parseUnmark(String tail) throws OkukeException {
+        return new UnmarkCommand(parseIndex(tail));
+    }
 
-            case "unmark":
-                if (parts.length < 2) throw new OkukeException.InvalidCommandException();
-                return new UnmarkCommand(parseIndex(parts[1]));
+    private static Command parseDelete(String tail) throws OkukeException {
+        return new DeleteCommand(parseIndex(tail));
+    }
 
-            case "delete":
-                if (parts.length < 2) throw new OkukeException.InvalidCommandException();
-                return new DeleteCommand(parseIndex(parts[1]));
-
-            case "todo":
-                if (parts.length < 2 || parts[1].isBlank()) throw new OkukeException.InvalidCommandException();
-                return new AddTodoCommand(parts[1].trim());
-
-            case "deadline": {
-                if (parts.length < 2) throw new OkukeException.InvalidCommandException();
-                String[] segs = parts[1].split("\\s*/by\\s*", 2);
-                if (segs.length != 2) throw new OkukeException.InvalidCommandException();
-                return new AddDeadlineCommand(segs[0].trim(), segs[1].trim());
-            }
-
-            case "event": {
-                if (parts.length < 2) throw new OkukeException.InvalidCommandException();
-                String rest = parts[1];
-                int fromIdx = rest.indexOf("/from");
-                int toIdx = rest.indexOf("/to");
-                if (fromIdx < 0 || toIdx < 0 || toIdx <= fromIdx) {
-                    throw new OkukeException.MissingEventArgumentsException();
-                }
-                String desc = rest.substring(0, fromIdx).trim();
-                String from = rest.substring(fromIdx + 5, toIdx).trim();
-                String to   = rest.substring(toIdx + 3).trim();
-                if (desc.isEmpty() || from.isEmpty() || to.isEmpty()) {
-                    throw new OkukeException.MissingEventArgumentsException();
-                }
-                return new AddEventCommand(desc, from, to);
-            }
-
-            case "find":
-                if (parts.length < 2 || parts[1].isBlank()) throw new OkukeException.InvalidCommandException();
-                return new FindCommand(parts[1].trim());
-
-            // Stretch: list items on a date
-            case "on":
-                if (parts.length < 2 || parts[1].isBlank()) throw new OkukeException.InvalidCommandException();
-                return new OnDateCommand(parts[1].trim());
-
-            default:
-                throw new OkukeException.InvalidCommandException();
+    private static Command parseTodo(String tail) throws OkukeException {
+        if (tail == null || tail.isBlank()) {
+            throw new OkukeException.InvalidCommandException();
         }
+        return new AddTodoCommand(tail.trim());
+    }
+
+    private static Command parseDeadline(String tail) throws OkukeException {
+        // "deadline DESC /by WHEN"
+        if (tail == null) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        String[] parts = DEADLINE_BY_SPLIT.split(tail, 2);
+        if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        String description = parts[0].trim();
+        String by = parts[1].trim();
+        return new AddDeadlineCommand(description, by);
+    }
+
+    private static Command parseEvent(String tail) throws OkukeException {
+        // "event DESC /from X /to Y"
+        if (tail == null) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        String[] first = EVENT_FROM_SPLIT.split(tail, 2);
+        if (first.length != 2) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        String description = first[0].trim();
+        String[] second = EVENT_TO_SPLIT.split(first[1], 2);
+        if (second.length != 2) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        String from = second[0].trim();
+        String to   = second[1].trim();
+        if (description.isBlank() || from.isBlank() || to.isBlank()) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        return new AddEventCommand(description, from, to);
+    }
+
+    private static Command parseOnDate(String tail) throws OkukeException {
+        if (tail == null || tail.isBlank()) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        return new OnDateCommand(tail.trim());
+    }
+
+    private static Command parseFind(String tail) throws OkukeException {
+        if (tail == null || tail.isBlank()) {
+            throw new OkukeException.InvalidCommandException();
+        }
+        return new FindCommand(tail.trim());
     }
 
     /**
@@ -113,8 +161,10 @@ public class Parser {
      */
     private static int parseIndex(String s) throws OkukeException.InvalidCommandException {
         try {
-            return Integer.parseInt(s.trim());
-        } catch (NumberFormatException nfe) {
+            int idx = Integer.parseInt(s.trim());
+            if (idx <= 0) throw new NumberFormatException("index must be positive (1-based)");
+            return idx;
+        } catch (Exception nfe) {
             throw new OkukeException.InvalidCommandException();
         }
     }
