@@ -29,7 +29,7 @@ public final class OKuke {
      */
     public OKuke() {
         this.ui = new Ui();
-        this.storage = new Storage(); // Storage encapsulates the ./src/data/MochiBot.txt path
+        this.storage = new Storage(); // your existing self-contained path (./src/data/Okuke.txt)
         this.tasks = loadTasksOrEmpty();
     }
 
@@ -99,6 +99,7 @@ public final class OKuke {
      * @return the response text to show in the reply bubble
      */
     public String getResponse(String input) {
+        assert input != null : "input must not be null";
         final okuke.ui.Gui gui = new okuke.ui.Gui(); // short-lived buffer for one response
 
         try {

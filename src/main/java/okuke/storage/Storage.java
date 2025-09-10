@@ -64,6 +64,7 @@ public class Storage {
      * @throws okuke.exception.OkukeException.DataFileMissingException if the data file path does not exist
      */
     public List<Task> load() throws IOException, OkukeException.DataFileMissingException {
+        assert FILE_PATH != null : "FILE_PATH must be set";
         List<Task> tasks = new ArrayList<>();
 
         if (!Files.exists(path)) {
@@ -144,6 +145,7 @@ public class Storage {
      * @return the parsed task, or {@code null} if the line is invalid
      */
     private Task parseLine(String line) {
+        assert line != null : "line cannot be null";
         try {
             String[] parts = line.split("\\s\\|\\s"); // exact " | "
             if (parts.length < 3) return null;
@@ -189,6 +191,7 @@ public class Storage {
      * @return parsed {@code LocalDateTime}
      */
     private static LocalDateTime parseIsoDateOrDateTime(String s) {
+        assert s != null : "date string cannot be null";
         String in = s.trim();
         try { return LocalDateTime.parse(in, ISO_DT); } catch (Exception ignore) {}
         // Fallback: just a date -> start of day
