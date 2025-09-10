@@ -1,21 +1,27 @@
 package okuke;
 
+import java.util.Objects;
+
 import okuke.command.Command;
 import okuke.exception.OkukeException;
 import okuke.parser.Parser;
 import okuke.storage.Storage;
-import okuke.ui.Ui;
 import okuke.task.TaskList;
+import okuke.ui.Ui;
 
 /**
  * Main application entry point and runtime loop for OKuke.
  * Wires Storage, Parser, and Ui, then runs the REPL until exit.
  */
-public class OKuke {
+public final class OKuke {
+
+    private static final String MSG_INVALID_INDEX_OR_FORMAT =
+            "Invalid index or format. Please check your command.";
+    private static final String MSG_UNEXPECTED_ERROR_PREFIX = "[Error] ";
 
     private final Storage storage;
-    private TaskList tasks;
     private final Ui ui;
+    private TaskList tasks;
 
     /**
      * Constructs the application, initializing storage, UI, and task list.
@@ -24,43 +30,52 @@ public class OKuke {
     public OKuke() {
         this.ui = new Ui();
         this.storage = new Storage(); // your existing self-contained path (./src/data/Okuke.txt)
+        this.tasks = loadTasksOrEmpty();
+    }
+
+    private TaskList loadTasksOrEmpty() {
         try {
-            this.tasks = new TaskList(storage.load());
+            return new TaskList(storage.load());
         } catch (OkukeException.DataFileMissingException e) {
-            // Stretch-goal: show missing-file message but continue with empty tasks
+            // Missing file is non-fatal: show message and continue with empty list.
             ui.showLoadingError(e.getMessage());
-            this.tasks = new TaskList();
         } catch (Exception e) {
             ui.showLoadingError("[okuke.storage.Storage] Failed to load tasks: " + e.getMessage());
-            this.tasks = new TaskList();
         }
+        return new TaskList();
     }
 
     /**
      * Runs the read–evaluate–print loop:
-     * <ol>
-     *   <li>Read a line from the UI</li>
-     *   <li>Parse into a Command</li>
-     *   <li>Execute the Command (mutating storage/tasks/UI as needed)</li>
-     *   <li>Handle and display errors gracefully</li>
-     *   <li>Repeat until the Command signals exit</li>
-     * </ol>
+     *  1. Read a line from the UI
+     *  2. Parse into a Command
+     *  3. Execute the Command
+     *  4. Handle and display errors gracefully
+     *  5. Repeat until the Command signals exit
      */
     public void run() {
         ui.showWelcome();
-        boolean isExit = false;
-        while (!isExit) {
+
+        while (true) {
             try {
-                String fullCommand = ui.readCommand();
-                Command c = Parser.parse(fullCommand);
-                c.execute(tasks, ui, storage);
-                isExit = c.isExit();
+                final String fullCommand = ui.readCommand();
+                if (fullCommand == null || fullCommand.isBlank()) {
+                    // Guard clause: ignore blank lines to keep the main flow linear.
+                    continue;
+                }
+
+                final Command command = Parser.parse(fullCommand);
+                command.execute(tasks, ui, storage);
+
+                if (command.isExit()) {
+                    break;
+                }
             } catch (OkukeException e) {
                 ui.showError(e.getMessage());
-            } catch (NumberFormatException | IndexOutOfBoundsException ex) {
-                ui.showError("Invalid index or format. Please check your okuke.command.");
-            } catch (Exception ex) {
-                ui.showError("[Error] " + ex.getMessage());
+            } catch (NumberFormatException | IndexOutOfBoundsException e) {
+                ui.showError(MSG_INVALID_INDEX_OR_FORMAT);
+            } catch (Exception e) {
+                ui.showError(MSG_UNEXPECTED_ERROR_PREFIX + safeMessage(e));
             }
         }
     }
@@ -78,26 +93,35 @@ public class OKuke {
      * Executes one input line through Parser/Command and returns the formatted reply
      * string for the GUI (user bubble on the right, reply on the left).
      *
+     * <p>Stateless w.r.t. the UI buffer: builds a short-lived Gui on each call and returns its contents.</p>
+     *
      * @param input the raw line the user typed
      * @return the response text to show in the reply bubble
      */
     public String getResponse(String input) {
         assert input != null : "input must not be null";
-        okuke.ui.Gui gui = new okuke.ui.Gui();
+        final okuke.ui.Gui gui = new okuke.ui.Gui(); // short-lived buffer for one response
+
         try {
-            Command c = Parser.parse(input);
-            c.execute(tasks, gui, storage);
-            if (c.isExit()) {
+            final Command command = Parser.parse(Objects.requireNonNullElse(input, ""));
+            command.execute(tasks, gui, storage);
+            if (command.isExit()) {
                 gui.showBye();
             }
         } catch (OkukeException e) {
             gui.showError(e.getMessage());
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
-            gui.showError("Invalid index or format. Please check your command.");
-        } catch (Exception ex) {
-            gui.showError("[Error] " + ex.getMessage());
+            gui.showError(MSG_INVALID_INDEX_OR_FORMAT);
+        } catch (Exception e) {
+            gui.showError(MSG_UNEXPECTED_ERROR_PREFIX + safeMessage(e));
         }
+
         return gui.consume();
     }
 
+    // Avoid exposing stack traces to end users, but still show a useful message.
+    private static String safeMessage(Throwable t) {
+        final String m = t.getMessage();
+        return (m == null || m.isBlank()) ? t.getClass().getSimpleName() : m;
+    }
 }
