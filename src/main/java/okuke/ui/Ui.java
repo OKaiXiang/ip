@@ -139,6 +139,10 @@ public class Ui {
         showLine();
     }
 
+    public void showHelp(String msg) {
+        System.out.println(msg);
+    }
+
     /**
      * Prints a divider line and a section header before a list of items.
      *

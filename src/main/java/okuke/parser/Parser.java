@@ -3,6 +3,7 @@ package okuke.parser;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import okuke.command.HelpCommand;
 import okuke.exception.OkukeException;
 import okuke.command.Command;
 import okuke.command.ExitCommand;
@@ -41,6 +42,7 @@ public final class Parser {
         static final String EVENT    = "event";
         static final String ON       = "on";
         static final String FIND     = "find";
+        static final String HELP     = "help";
     }
 
     // -------- Regex patterns (precompiled for clarity/perf) --------
@@ -80,6 +82,7 @@ public final class Parser {
             case Cmd.EVENT    -> parseEvent(tail);
             case Cmd.ON       -> parseOnDate(tail);
             case Cmd.FIND     -> parseFind(tail);
+            case Cmd.HELP     -> new HelpCommand();
             default           -> throw new OkukeException.InvalidCommandException();
         };
     }

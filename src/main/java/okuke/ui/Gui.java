@@ -75,6 +75,14 @@ public class Gui extends Ui {
         line();
     }
 
+    @Override
+    public void showHelp(String msg) {
+        if (msg == null || msg.isEmpty()) return;
+        if (!out.isEmpty()) out.append('\n');
+        out.append(msg);
+    }
+
+
     @Override public void showItemsHeader(String title) { line(); out.append(title).append('\n'); }
     @Override public void showItemsFooter() { line(); }
 }
