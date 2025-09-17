@@ -40,14 +40,21 @@ public class FindCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         List<Task> matches = tasks.find(keyword);
 
-        ui.showItemsHeader("Here are the matching tasks in your list:");
         if (matches.isEmpty()) {
-            System.out.println("  (no matching tasks)");
+            // Route through UI so it appears in the JavaFX dialog
+            ui.showHelp("  (no matching tasks)");
         } else {
+            ui.showItemsHeader("Here are the matching tasks in your list:");
+            // Build the numbered list and send as one chunk to the GUI buffer
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < matches.size(); i++) {
-                System.out.printf(" %d.%s%n", i + 1, matches.get(i));
+                sb.append(String.format(" %d.%s%n", i + 1, matches.get(i)));
             }
+            // strip trailing newline for tidier output
+            ui.showHelp(sb.toString().stripTrailing());
         }
+
         ui.showItemsFooter();
     }
+
 }
